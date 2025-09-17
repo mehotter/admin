@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Purple Admin • Users</title>
+
+  <link rel="stylesheet" href="../assets/vendors/mdi/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="../assets/vendors/base/vendor.bundle.base.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="shortcut icon" href="../assets/images/favicon.png" />
+
+  <style>
+    .user-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:22px; }
+    @media (max-width:1200px){ .user-grid{ grid-template-columns:repeat(4,1fr);} }
+    @media (max-width:992px){ .user-grid{ grid-template-columns:repeat(3,1fr);} }
+    @media (max-width:768px){ .user-grid{ grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:520px){ .user-grid{ grid-template-columns:1fr;} }
+    .user-card { border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,.06); overflow:hidden; background:#fff; cursor:pointer; transition:transform .15s; }
+    .user-card:hover { transform: translateY(-4px); }
+    .banner-img { width:100%; height:90px; object-fit:cover; background:#eee; }
+    .profile-img { width:64px; height:64px; border-radius:50%; border:3px solid #fff; position:absolute; top:54px; left:calc(50% - 32px); background:#ddd; object-fit:cover; }
+    .uc-body { padding:48px 14px 18px; text-align:center; }
+    .uc-name { font-weight:600; margin:4px 0 2px; }
+    .text-muted { color:#6b6f76; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="container-scroller">
+    <!-- Navbar -->
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="navbar-brand-wrapper d-flex justify-content-center">
+        <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">
+          <a class="navbar-brand brand-logo" href="index.html"><img src="../assets/images/logo.svg" alt="logo"/></a>
+          <a class="navbar-brand brand-logo-mini" href="index.html"><img src="../assets/images/logo-mini.svg" alt="logo"/></a>
+          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+            <span class="mdi mdi-sort-variant"></span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid page-body-wrapper">
+      <!-- Sidebar -->
+      <nav class="sidebar sidebar-offcanvas" id="sidebar">
+        <ul class="nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <i class="mdi mdi-home menu-icon"></i>
+              <span class="menu-title">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="users.html">
+              <i class="mdi mdi-account-multiple menu-icon"></i>
+              <span class="menu-title">Users</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <h4 class="card-title mb-3">All Users</h4>
+          <div id="userGrid" class="user-grid">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/vendors/base/vendor.bundle.base.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/users.js"></script>
+</body>
+</html>

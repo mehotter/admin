@@ -2,28 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Purple Admin • Sign in</title>
+  <link rel="stylesheet" href="assets/css/vendor.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/auth.css" />
 </head>
-<body>
-  <div class="login-container">
-    <h2>Admin Login</h2>
-    <form id="login-form">
-      <label>Email</label>
-      <input type="email" id="email" required />
-      <label>Password</label>
-      <input type="password" id="password" required />
-      <button type="submit">Sign In</button>
-      <p id="error-msg" class="error"></p>
-    </form>
-  </div>
+<body class="auth-page">
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="brand" style="display:flex;align-items:center;gap:12px;">
+        <img src="assets/images/logo.svg" alt="Purple" style="height:32px;">
+        <h2 style="color:#a259ff;font-weight:700;">Purple</h2>
+      </div>
+      <h3 style="margin-bottom:0;">Hello! let's get started</h3>
+      <p class="muted" style="margin-top:0;">Sign in to continue.</p>
 
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <input id="email" type="email" class="form-control" placeholder="Username" autocomplete="username" required />
+        </div>
+        <div class="form-group">
+          <div class="password-field">
+            <input id="password" type="password" class="form-control" placeholder="Password" autocomplete="current-password" required />
+            <button type="button" id="togglePwd" class="ghost-btn" aria-label="Show password" tabindex="-1">👁️</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-gradient full" style="margin-top:12px;">SIGN IN</button>
+        <div class="form-row between mt-2">
+          <label class="checkbox">
+            <input id="remember" type="checkbox" />
+            <span>Keep me signed in</span>
+          </label>
+          <a href="#" id="forgot-link" class="link">Forgot password?</a>
+        </div>
+        <div id="error-msg" class="error mt-2"></div>
+      </form>
+
+      <div class="divider mt-3"></div>
+      <p class="center mt-3" style="font-size:15px;">Don’t have an account? <a href="register.html" class="link">Create</a></p>
+    </div>
+  </div>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-  <!-- Firebase config and login logic -->
   <script src="assets/js/firebase-config.js"></script>
   <script src="assets/js/login.js"></script>
 </body>
