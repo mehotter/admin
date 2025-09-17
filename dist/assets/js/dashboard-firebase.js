@@ -19,7 +19,7 @@ function startDashboard() {
     getTotalUsers();
     getTotalTransactions();
     getTotalIncome();
-  }, 300);
+  }, 300);  
 }
 
 // ---------- Users ----------
@@ -60,16 +60,18 @@ async function getTotalTransactions() {
 }
 
 // ---------- Income (20% of gifts received) ----------
-const INCOME_FIELD = 'received'; // change to 'totalReceived' or 'totalrecived' if needed
+const INCOME_FIELD = 'totalReceived'; // change to 'totalReceived' or 'totalrecived' if needed
 
 async function getTotalIncome() {
   try {
     let sum = 0;
     const snap = await db.collection('users').get();
     snap.forEach((doc) => {
+      // This line gets the 'received' value from each user
       const v = Number(doc.data()?.[INCOME_FIELD]) || 0;
       sum += v;
     });
+    // This line calculates 20% of the total sum
     const income = Math.round(sum * 0.2 * 100) / 100; // 20%, 2 decimals
     updateIncomeCard(income);
     console.log(`Income from 20% of ${INCOME_FIELD}:`, { sum, income });

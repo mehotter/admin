@@ -1,32 +1,63 @@
 // assets/js/users.js
 
-auth.onAuthStateChanged(async user => {
-  if (!user) return window.location.href = 'login.html';
+async function loadUsers() {
+  const tableBody = document.getElementById('users-table-body');
+  if (!tableBody) {
+    hideLoader(); // Hide loader if table isn't on the page for some reason
+    return;
+  }
+  
+  tableBody.innerHTML = ''; // Start with an empty table body
 
-  const grid = document.getElementById('userGrid');
   try {
     const snap = await db.collection('users').get();
-    if (snap.empty) { grid.textContent = 'No users found.'; return; }
+    if (snap.empty) {
+      tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No users found.</td></tr>';
+      return;
+    }
 
-    grid.innerHTML = '';
+    const formatOnlineStatus = (isOnline) => {
+      if (isOnline === true) {
+        return '<i class="mdi mdi-check-circle" style="color: green; font-size: 1.2rem;" title="Online"></i>';
+      }
+      return '<i class="mdi mdi-close-circle" style="color: red; font-size: 1.2rem;" title="Offline"></i>';
+    };
+
+    const formatVerifiedStatus = (isVerified) => {
+      if (isVerified === true) {
+        return '<i class="mdi mdi-check-circle" style="color: green; font-size: 1.2rem;" title="Verified"></i>';
+      }
+      return '<i class="mdi mdi-close-circle" style="color: red; font-size: 1.2rem;" title="Not Verified"></i>';
+    };
+
     snap.forEach(doc => {
       const d = doc.data();
-      const card = document.createElement('div');
-      card.className = 'user-card';
-      card.innerHTML = `
-        <div style="position:relative">
-          <img class="banner-img" src="${d.bannerUrl||'assets/images/placeholder-wide.jpg'}">
-          <img class="profile-img" src="${d.photoUrl||'assets/images/placeholder.jpg'}">
-        </div>
-        <div class="uc-body">
-          <div class="uc-name">${d.name||'Unnamed'}</div>
-          <div class="text-muted">${d.location||''}</div>
-        </div>`;
-      card.onclick = () => window.location.href = `user-details.html?id=${doc.id}`;
-      grid.appendChild(card);
+      const row = document.createElement('tr');
+      const photoUrl = d.photoUrl || 'assets/images/faces/face1.jpg';
+
+      row.innerHTML = `
+        <td>
+          <img src="${photoUrl}" class="me-2" alt="image">
+          ${d.name || 'Unnamed'}
+        </td>
+        <td>${d.email || '—'}</td>
+        <td>${d.location || '—'}</td>
+        <td>
+            <label class="badge badge-gradient-success">${d.level || 0}</label>
+        </td>
+        <td style="text-align: center;">${formatOnlineStatus(d.online)}</td>
+        <td style="text-align: center;">${formatVerifiedStatus(d.verified)}</td>
+        <td>${doc.id}</td>
+        <td>
+          <a href="user-details.html?id=${doc.id}" class="btn btn-gradient-primary btn-sm">View</a>
+        </td>
+      `;
+      tableBody.appendChild(row);
     });
   } catch (e) {
     console.error(e);
-    grid.textContent = 'Failed to load users.';
+    tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: red;">Failed to load users.</td></tr>';
+  } finally {
+    hideLoader();
   }
-});
+}
