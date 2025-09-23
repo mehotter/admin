@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Purple Admin | User Details</title>
+    <title>Purple Admin | Rooms</title>
     <link rel="stylesheet" href="assets/vendors/mdi/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="assets/vendors/css/vendor.bundle.base.css">
     <link rel="stylesheet" href="assets/css/style.css">
@@ -70,8 +70,9 @@
             <li class="nav-item">
               <a class="nav-link" href="rooms.html">
                 <span class="menu-title">Rooms</span>
-                <i class="mdi mdi-door menu-icon"></i>
+                <i class="mdi mdi-hotel menu-icon"></i>
               </a>
+            </li>
           </ul>
         </nav>
         <div class="main-panel">
@@ -79,18 +80,32 @@
             <div class="page-header">
               <h3 class="page-title">
                 <span class="page-title-icon bg-gradient-primary text-white me-2">
-                  <i class="mdi mdi-account-card-details"></i>
-                </span> User Details
+                  <i class="mdi mdi-hotel"></i>
+                </span> Rooms
               </h3>
-              <div id="edit-button-container">
-                 <button id="edit-user-btn" class="btn btn-gradient-info">Edit User</button>
-              </div>
-              </div>
+            </div>
             <div class="row">
               <div class="col-12 grid-margin">
                 <div class="card">
-                  <div class="card-body" id="profile-container">
+                  <div class="card-body">
+                    <h4 class="card-title">All Rooms</h4>
+                    <div class="table-responsive">
+                      <table class="table">
+                        <thead>
+                          <tr>
+                            <th>Image</th>
+                            <th>Title</th>
+                            <th>Theme</th>
+                            <th>Created By</th>
+                            <th>Room ID</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody id="rooms-table-body">
+                          </tbody>
+                      </table>
                     </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -111,6 +126,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="assets/js/firebase-config.js"></script>
     <script src="assets/js/main-auth.js"></script>
-    <script src="assets/js/user-details.js"></script>
+    <script src="assets/js/rooms.js"></script>
   </body>
 </html>
