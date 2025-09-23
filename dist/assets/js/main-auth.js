@@ -1,7 +1,17 @@
 // assets/js/main-auth.js
 
-document.addEventListener('DOMContentLoaded', () => {
+function hideLoader() {
+  const loader = document.querySelector('.page-loader');
+  if (loader) {
+    loader.style.opacity = '0';
+    setTimeout(() => {
+      loader.style.display = 'none';
+    }, 300);
+  }
+  document.body.classList.remove('is-loading');
+}
 
+document.addEventListener('DOMContentLoaded', () => {
   const signoutLink = document.getElementById('signout-link');
   if (signoutLink) {
     signoutLink.addEventListener('click', async (e) => {
@@ -27,26 +37,26 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   auth.onAuthStateChanged(user => {
-    const path = window.location.pathname;
-    const isLoginPage = path.endsWith('login.html');
+    const isLoginPage = window.location.pathname.endsWith('login.html');
 
     if (user) {
       console.log('User is authenticated:', user.email);
-      // FIRST, update the display name.
       updateProfileDisplay(user);
-
-      // THEN, run the logic for the current page.
-      if (path.endsWith('index.html') || path.endsWith('/')) {
-        if (typeof startDashboard === 'function') startDashboard();
-      } else if (path.endsWith('users.html')) {
-        if (typeof loadUsers === 'function') loadUsers();
-      } else if (path.endsWith('user-details.html')) {
-        if (typeof loadUserDetails === 'function') loadUserDetails();
+      
+      // **ADDED THIS LINE**
+      // This ensures the dashboard code only runs after login is confirmed.
+      if (typeof startDashboard === 'function') {
+        startDashboard();
       }
+      
+      // Dispatch a custom event to notify other scripts that authentication is complete
+      document.dispatchEvent(new Event('auth-ready'));
 
     } else if (!isLoginPage) {
       console.log('No user found, redirecting to login.');
       window.location.href = 'login.html';
+    } else {
+      hideLoader();
     }
   });
 });

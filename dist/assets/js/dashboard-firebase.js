@@ -1,25 +1,14 @@
-// dashboard-firebase.js
-// Protect dashboard, then load metrics once authenticated.
-
-(function initDashboard() {
-  // Require a signed-in session to view the dashboard
-  auth.onAuthStateChanged((user) => {
-    if (!user) {
-      window.location.href = 'login.html'; // gate here only
-      return;
-    }
-    console.log('Authenticated as:', user.email);
-    startDashboard();
-  });
-})();
-
+/**
+ * This function is called by main-auth.js after the user is authenticated
+ * and the page is ready.
+ */
 function startDashboard() {
   // Load all cards in parallel after a small paint delay
   setTimeout(() => {
     getTotalUsers();
     getTotalTransactions();
     getTotalIncome();
-  }, 300);  
+  }, 300);
 }
 
 // ---------- Users ----------
@@ -35,157 +24,141 @@ async function getTotalUsers() {
   }
 }
 
-// ---------- Transactions ----------
+// ---------- Transactions (UPDATED) ----------
 async function getTotalTransactions() {
   try {
     const snap = await db.collection('transactions').get();
-    let total = 0, success = 0, failed = 0;
+    let totalCount = 0,
+      successCount = 0,
+      failedCount = 0,
+      successfulValue = 0; // This will hold the sum of successful transaction amounts
 
     snap.forEach((doc) => {
-      total++;
-      const s = (doc.data().status || '').toLowerCase();
-      if (s === 'success') success++;
-      else if (s === 'failed') failed++;
+      totalCount++;
+      const data = doc.data();
+      const status = (data.status || '').toLowerCase();
+
+      if (status === 'success') {
+        successCount++;
+        // We now add the transaction amount to our total value
+        if (data && typeof data.amount === 'number') {
+          successfulValue += data.amount;
+        }
+      } else if (status === 'failed') {
+        failedCount++;
+      }
     });
 
-    const rate = total ? Math.round((success / total) * 100) : 0;
-    updateTransactionsCard(total, success, failed, rate);
-    updatePieChart(success, failed, rate);
-    console.log('Transactions:', { total, success, failed, rate });
+    const rate = totalCount ? Math.round((successCount / totalCount) * 100) : 0;
+    // Pass the new summed value to the card updater
+    updateTransactionsCard(successfulValue, successCount, failedCount, rate);
+
+    if (typeof updatePieChart === 'function') {
+      updatePieChart(successCount, failedCount, totalCount - successCount - failedCount);
+    }
   } catch (err) {
     console.error('Transactions fetch error:', err);
     updateTransactionsCard(0, 0, 0, 0);
-    updatePieChart(0, 0, 0);
   }
 }
 
-// ---------- Income (20% of gifts received) ----------
-const INCOME_FIELD = 'totalReceived'; // change to 'totalReceived' or 'totalrecived' if needed
-
+// ---------- Income (FIXED) ----------
 async function getTotalIncome() {
   try {
-    let sum = 0;
     const snap = await db.collection('users').get();
-    snap.forEach((doc) => {
-      // This line gets the 'received' value from each user
-      const v = Number(doc.data()?.[INCOME_FIELD]) || 0;
-      sum += v;
+    let totalReceivedValue = 0;
+    snap.forEach(doc => {
+      const userData = doc.data();
+      // FIXED: Corrected typo from "totalRecived" to "totalReceived"
+      if (userData && typeof userData.totalReceived === 'number') {
+        totalReceivedValue += userData.totalReceived;
+      }
     });
-    // This line calculates 20% of the total sum
-    const income = Math.round(sum * 0.2 * 100) / 100; // 20%, 2 decimals
-    updateIncomeCard(income);
-    console.log(`Income from 20% of ${INCOME_FIELD}:`, { sum, income });
-  } catch (err) {
-    console.error('Income calc error:', err);
+    const totalIncome = totalReceivedValue * 0.20;
+    updateIncomeCard(totalIncome);
+  } catch (err)
+ {
+    console.error('Income fetch error:', err);
     updateIncomeCard(0);
   }
 }
 
-// ---------- UI updates ----------
-function updateUsersCard(n) {
-  try {
-    const card = findCardByTitle(/Total Users|Weekly Sales/);
-    if (!card) return;
-    setCardTitle(card, 'Total Users', 'ti-user');
-    setCardNumber(card, n);
-  } catch (e) {
-    console.error('updateUsersCard error:', e);
-  }
+
+// ---------- Card Updaters ----------
+function updateUsersCard(total) {
+  const card = document.querySelector('[data-card-id="total-users"] .card-body');
+  setCardNumber(card, total);
+}
+
+// UPDATED: This function now handles the new data format
+function updateTransactionsCard(value, successCount, failedCount, rate) {
+  const card = document.querySelector('[data-card-id="total-transactions"] .card-body');
+  // Display the total value of transactions in currency format
+  setCardCurrency(card, value);
+  // Update the subtext to show counts and success rate
+  setCardSubtext(card, `Success: ${successCount} | Failed: ${failedCount} | Rate: ${rate}%`);
 }
 
 function updateIncomeCard(amount) {
-  try {
-    const card = findCardByTitle(/Total Income|Weekly Orders/);
-    if (!card) return;
-    setCardTitle(card, 'Total Income', 'ti-money');
-    setCardCurrency(card, amount);
-    setCardSubtext(card, 'From 20% of total gifts received');
-  } catch (e) {
-    console.error('updateIncomeCard error:', e);
-  }
+  const card = document.querySelector('[data-card-id="total-income"] .card-body');
+  setCardCurrency(card, amount);
+  setCardSubtext(card, '20% of all received funds');
 }
 
-function updateTransactionsCard(total, success, failed, rate) {
-  try {
-    const card = findCardByTitle(/Total Transactions|Visitors Online/);
-    if (!card) return;
-    setCardTitle(card, 'Total Transactions', 'ti-receipt');
-    setCardNumber(card, total);
 
-    // If card has a stats line, render it; otherwise append one
-    let statsEl = card.querySelector('.tx-stats');
-    if (!statsEl) {
-      statsEl = document.createElement('div');
-      statsEl.className = 'tx-stats text-muted mt-1';
-      card.appendChild(statsEl);
-    }
-    statsEl.innerHTML = `Success: ${success} • Failed: ${failed} • Rate: ${rate}%`;
-  } catch (e) {
-    console.error('updateTransactionsCard error:', e);
-  }
-}
-
-function updatePieChart(success, failed, rate) {
-  try {
-    // Retitle the demo pie to Transaction Stats
-    document.querySelectorAll('h4').forEach((h4) => {
-      if (h4.textContent.includes('Traffic Sources')) h4.textContent = 'Transaction Stats';
-    });
-    document.querySelectorAll('li').forEach((li) => {
-      if (li.textContent.includes('Search Engines')) li.textContent = `Successful ${rate}%`;
-      if (li.textContent.includes('Direct Click')) li.textContent = `Failed ${Math.max(0, 100 - rate)}%`;
-      if (li.textContent.includes('Bookmarks Click')) li.textContent = `Total: ${success + failed}`;
-    });
-  } catch (e) {
-    console.error('updatePieChart error:', e);
-  }
-}
-
-// ---------- Helpers ----------
-function findCardByTitle(regex) {
-  const bodies = document.querySelectorAll('.card-body');
-  for (const body of bodies) {
-    const h4 = body.querySelector('h4');
-    if (h4 && regex.test(h4.textContent)) return body;
-  }
-  return null;
-}
-
+// ---------- Card Helpers ----------
 function setCardTitle(card, title, iconClass) {
-  const h4 = card.querySelector('h4') || document.createElement('h4');
-  h4.innerHTML = `${title} <i class="${iconClass} ml-1"></i>`;
-  if (!card.contains(h4)) card.prepend(h4);
+  if (!card) return;
+  let h4 = card.querySelector('h4');
+  if (!h4) {
+    h4 = document.createElement('h4');
+    h4.className = 'font-weight-normal mb-3';
+    card.prepend(h4);
+  }
+  h4.innerHTML = `${title} <i class="${iconClass} ml-1\"></i>`;
 }
 
 function setCardNumber(card, n) {
-  // Find a prominent numeric element or create one
+  if (!card) return;
   let main = card.querySelector('.card-metric');
   if (!main) {
+    main = card.querySelector('h2'); // The template uses h2 for the main number
+    if (main) main.classList.add('card-metric');
+  }
+  if (!main) {
     main = document.createElement('h2');
-    main.className = 'card-metric';
+    main.className = 'card-metric mb-5';
     card.appendChild(main);
   }
   main.textContent = Number(n).toLocaleString();
 }
 
 function setCardCurrency(card, amount) {
+  if (!card) return;
   let main = card.querySelector('.card-metric');
   if (!main) {
+    main = card.querySelector('h2'); // The template uses h2 for the main number
+    if (main) main.classList.add('card-metric');
+  }
+  if (!main) {
     main = document.createElement('h2');
-    main.className = 'card-metric';
+    main.className = 'card-metric mb-5';
     card.appendChild(main);
   }
-  main.textContent = '₹ ' + Number(amount).toLocaleString(undefined, {
+  // Ensure amount is treated as a number to prevent "NaN"
+  const numericAmount = Number(amount) || 0;
+  main.textContent = '₹ ' + numericAmount.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
 }
 
 function setCardSubtext(card, text) {
-  let sub = card.querySelector('.card-sub');
+  if (!card) return;
+  let sub = card.querySelector('.card-text');
   if (!sub) {
-    sub = document.createElement('small');
-    sub.className = 'card-sub text-muted d-block';
+    sub = document.createElement('h6');
+    sub.className = 'card-text';
     card.appendChild(sub);
   }
   sub.textContent = text;
